@@ -1,52 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import * as THREE from "three";
 import gsap from "gsap";
-import { Pause, Play, RotateCcw } from "lucide-react";
+import { Pause, Play, RotateCcw, Sparkles } from "lucide-react";
 import { VILLA_RESIDENCES } from "@/data/villa";
+import { VILLA_NODES } from "./sanctuary-3d/types";
+import {
+  createWoodTexture,
+  createStoneTexture,
+  createMistTexture,
+  createSanctuaryMaterials,
+} from "./sanctuary-3d/materials";
+import { buildGorgeLandscape } from "./sanctuary-3d/environment";
+import { buildVillaCompound } from "./sanctuary-3d/villa-models";
 
 interface Sanctuary3DSceneProps {
   activeVillaId: string;
   onSelectVilla?: (villaId: string) => void;
 }
-
-interface VillaNodeConfig {
-  id: string;
-  label: string;
-  elevationLabel: string;
-  position: [number, number, number];
-  cameraPos: [number, number, number];
-  lookAt: [number, number, number];
-}
-
-const VILLA_NODES: VillaNodeConfig[] = [
-  {
-    id: "canopy-pool-villa",
-    label: "01. Canopy",
-    elevationLabel: "248m ASL • Upper Canopy Cantilever",
-    position: [-1.45, 0.42, 0.35],
-    cameraPos: [-2.6, 2.1, 3.6],
-    lookAt: [-0.8, 0.2, 0.1],
-  },
-  {
-    id: "riverbank-sanctuary",
-    label: "02. Riverbank",
-    elevationLabel: "212m ASL • Ayung Gorge Waterfront",
-    position: [0.15, -0.22, 0.85],
-    cameraPos: [0.4, 1.65, 3.8],
-    lookAt: [0.1, -0.15, 0.4],
-  },
-  {
-    id: "grand-ridge-estate",
-    label: "03. Grand Ridge",
-    elevationLabel: "276m ASL • Crest Panorama Axis",
-    position: [1.55, 0.78, -0.45],
-    cameraPos: [2.8, 2.4, 3.4],
-    lookAt: [0.9, 0.45, -0.2],
-  },
-];
 
 function checkWebGLSupport(): boolean {
   if (typeof window === "undefined") return true;
@@ -61,32 +34,6 @@ function checkWebGLSupport(): boolean {
   }
 }
 
-function createMistTexture(): THREE.CanvasTexture | null {
-  const canvas = document.createElement("canvas");
-  canvas.width = 32;
-  canvas.height = 32;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return null;
-  const grad = ctx.createRadialGradient(16, 16, 1, 16, 16, 16);
-  grad.addColorStop(0, "rgba(247, 244, 238, 0.55)");
-  grad.addColorStop(0.45, "rgba(215, 208, 196, 0.22)");
-  grad.addColorStop(1, "rgba(24, 22, 20, 0)");
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 32, 32);
-  return new THREE.CanvasTexture(canvas);
-}
-
-function computeGorgeElevation(x: number, z: number): number {
-  const riverCurve = Math.sin(z * 0.65) * 0.45;
-  const distFromRiver = Math.abs(x - riverCurve);
-  const gorgeWall = Math.pow(Math.min(distFromRiver / 2.8, 1.2), 1.45) * 1.15;
-  const ridgeUndulation =
-    Math.sin(x * 1.3 + z * 0.9) * 0.14 +
-    Math.cos(x * 2.1 - z * 1.4) * 0.08;
-  const terraceStep = Math.round((gorgeWall + ridgeUndulation) * 7) / 7;
-  return gorgeWall * 0.65 + terraceStep * 0.35 - 0.38;
-}
-
 export default function Sanctuary3DScene({
   activeVillaId,
   onSelectVilla,
@@ -99,14 +46,23 @@ export default function Sanctuary3DScene({
       : false
   );
   const [overviewMode, setOverviewMode] = useState(false);
+  const [hoveredVillaId, setHoveredVillaId] = useState<string | null>(null);
   const isPausedRef = useRef(isPaused);
   const initialVillaIdRef = useRef(activeVillaId);
+  const onSelectVillaRef = useRef(onSelectVilla);
+
+  useEffect(() => {
+    onSelectVillaRef.current = onSelectVilla;
+  }, [onSelectVilla]);
 
   const sceneObjectsRef = useRef<{
     camera: THREE.PerspectiveCamera;
     targetLookAt: THREE.Vector3;
     villaGroups: Record<string, THREE.Group>;
+    villaHitBoxes: Record<string, THREE.Mesh>;
     monolithGroup: THREE.Group;
+    raycaster: THREE.Raycaster;
+    scene: THREE.Scene;
   } | null>(null);
 
   useEffect(() => {
@@ -118,8 +74,8 @@ export default function Sanctuary3DScene({
     const container = mountRef.current;
     if (!container) return;
 
-    const width = container.clientWidth || 520;
-    const height = container.clientHeight || 620;
+    const width = container.clientWidth || 540;
+    const height = container.clientHeight || 640;
     const isMobile = width < 640;
 
     let renderer: THREE.WebGLRenderer;
@@ -132,284 +88,132 @@ export default function Sanctuary3DScene({
       return;
     }
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x181614);
-    scene.fog = new THREE.FogExp2(0x181614, 0.105);
-
-    const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 50);
-    camera.position.set(-2.4, 2.15, 4.1);
-    const targetLookAt = new THREE.Vector3(0, 0.1, 0);
-    camera.lookAt(targetLookAt);
-
     renderer.setSize(width, height);
     renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2)
     );
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = 1.18;
+    renderer.shadowMap.enabled = !isMobile;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     container.innerHTML = "";
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xf7f4ee, 0.7);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x151412);
+    scene.fog = new THREE.FogExp2(0x151412, 0.095);
+
+    const camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 55);
+    camera.position.set(-2.6, 2.15, 3.8);
+    const targetLookAt = new THREE.Vector3(-0.3, 0.15, 0.1);
+    camera.lookAt(targetLookAt);
+
+    // Textures & Materials
+    const disposables: (THREE.BufferGeometry | THREE.Material)[] = [];
+    const woodTexture = createWoodTexture();
+    const stoneTexture = createStoneTexture();
+    const mistTexture = createMistTexture();
+    const materials = createSanctuaryMaterials(
+      woodTexture,
+      stoneTexture,
+      disposables
+    );
+
+    // Cinematic Lighting
+    const ambientLight = new THREE.AmbientLight(0xf2ede4, 0.72);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xffdfb8, 1.9);
-    sunLight.position.set(5, 8, 4);
+    const sunLight = new THREE.DirectionalLight(0xffe2bf, 2.1);
+    sunLight.position.set(5.5, 8.5, 4.2);
+    sunLight.castShadow = !isMobile;
+    if (sunLight.castShadow) {
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      sunLight.shadow.camera.near = 1;
+      sunLight.shadow.camera.far = 18;
+      sunLight.shadow.camera.left = -4;
+      sunLight.shadow.camera.right = 4;
+      sunLight.shadow.camera.top = 4;
+      sunLight.shadow.camera.bottom = -4;
+      sunLight.shadow.bias = -0.0006;
+    }
     scene.add(sunLight);
 
-    const terracottaRim = new THREE.PointLight(0xc57d65, 2.4, 9);
-    terracottaRim.position.set(-2.5, 2.2, -1.5);
-    scene.add(terracottaRim);
+    const terracottaFill = new THREE.PointLight(0xc57d65, 2.6, 9.5);
+    terracottaFill.position.set(-2.8, 2.4, -1.8);
+    scene.add(terracottaFill);
 
-    const riverMistLight = new THREE.PointLight(0x5f6e56, 1.4, 7);
-    riverMistLight.position.set(0.2, -0.5, 1.2);
-    scene.add(riverMistLight);
+    const riverValleyGlow = new THREE.PointLight(0x4e6b52, 1.8, 8.5);
+    riverValleyGlow.position.set(0.2, -0.6, 1.2);
+    scene.add(riverValleyGlow);
 
     const worldGroup = new THREE.Group();
     scene.add(worldGroup);
 
-    const segments = isMobile ? 36 : 56;
-    const terrainGeo = new THREE.PlaneGeometry(5.6, 5.6, segments, segments);
-    terrainGeo.rotateX(-Math.PI / 2);
-    const posAttr = terrainGeo.attributes.position;
-    const colors: number[] = [];
-    const colorLow = new THREE.Color(0x211e1b);
-    const colorMid = new THREE.Color(0x3a342e);
-    const colorHigh = new THREE.Color(0x7d4c38);
-
-    for (let i = 0; i < posAttr.count; i++) {
-      const vx = posAttr.getX(i);
-      const vz = posAttr.getZ(i);
-      const vy = computeGorgeElevation(vx, vz);
-      posAttr.setY(i, vy);
-
-      const normalizedH = THREE.MathUtils.clamp((vy + 0.45) / 1.35, 0, 1);
-      const vertexColor = colorLow
-        .clone()
-        .lerp(colorMid, Math.min(normalizedH * 1.4, 1))
-        .lerp(colorHigh, Math.max(0, (normalizedH - 0.55) * 1.6));
-      colors.push(vertexColor.r, vertexColor.g, vertexColor.b);
-    }
-    terrainGeo.setAttribute(
-      "color",
-      new THREE.Float32BufferAttribute(colors, 3)
+    // Sayan Gorge Environment & Landscape
+    const landscape = buildGorgeLandscape(
+      worldGroup,
+      materials,
+      disposables,
+      isMobile,
+      mistTexture
     );
-    terrainGeo.computeVertexNormals();
 
-    const terrainMat = new THREE.MeshStandardMaterial({
-      vertexColors: true,
-      roughness: 0.86,
-      metalness: 0.14,
-      flatShading: true,
-    });
-    const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
-    worldGroup.add(terrainMesh);
-
-    const wireGeo = terrainGeo.clone();
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0xc57d65,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.15,
-    });
-    const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-    wireMesh.position.y = 0.006;
-    worldGroup.add(wireMesh);
-
-    const riverGeo = new THREE.PlaneGeometry(
-      1.15,
-      5.6,
-      isMobile ? 16 : 24,
-      isMobile ? 32 : 48
-    );
-    riverGeo.rotateX(-Math.PI / 2);
-    const riverPos = riverGeo.attributes.position;
-    for (let i = 0; i < riverPos.count; i++) {
-      const rx = riverPos.getX(i);
-      const rz = riverPos.getZ(i);
-      const curveOffset = Math.sin(rz * 0.65) * 0.45;
-      riverPos.setX(i, rx * 0.55 + curveOffset);
-      riverPos.setY(i, -0.32 + Math.sin(rz * 2.5 + rx * 3) * 0.012);
-    }
-    riverGeo.computeVertexNormals();
-
-    const riverMat = new THREE.MeshStandardMaterial({
-      color: 0x3d4838,
-      emissive: 0x1c2419,
-      roughness: 0.2,
-      metalness: 0.65,
-      transparent: true,
-      opacity: 0.88,
-    });
-    const riverMesh = new THREE.Mesh(riverGeo, riverMat);
-    worldGroup.add(riverMesh);
-
-    // Subtle Valley Rainforest Mist Particles over the Ayung Gorge
-    const mistCount = isMobile ? 32 : 84;
-    const mistPositions = new Float32Array(mistCount * 3);
-    const mistBaseY = new Float32Array(mistCount);
-    for (let i = 0; i < mistCount; i++) {
-      const mz = (Math.random() - 0.5) * 4.8;
-      const riverCenter = Math.sin(mz * 0.65) * 0.45;
-      const mx = riverCenter + (Math.random() - 0.5) * 2.2;
-      const my = -0.18 + Math.random() * 0.65;
-      mistPositions[i * 3] = mx;
-      mistPositions[i * 3 + 1] = my;
-      mistPositions[i * 3 + 2] = mz;
-      mistBaseY[i] = my;
-    }
-    const mistGeo = new THREE.BufferGeometry();
-    mistGeo.setAttribute(
-      "position",
-      new THREE.BufferAttribute(mistPositions, 3)
-    );
-    const mistTexture = createMistTexture();
-    const mistMat = new THREE.PointsMaterial({
-      size: isMobile ? 0.28 : 0.34,
-      map: mistTexture ?? undefined,
-      transparent: true,
-      opacity: 0.42,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
-    const mistPoints = new THREE.Points(mistGeo, mistMat);
-    worldGroup.add(mistPoints);
-
+    // Villa Compounds
     const villaGroups: Record<string, THREE.Group> = {};
-    const disposableGeometries: THREE.BufferGeometry[] = [
-      terrainGeo,
-      wireGeo,
-      riverGeo,
-      mistGeo,
-    ];
-    const disposableMaterials: THREE.Material[] = [
-      terrainMat,
-      wireMat,
-      riverMat,
-      mistMat,
-    ];
+    const villaHitBoxes: Record<string, THREE.Mesh> = {};
 
-    VILLA_NODES.forEach((node, index) => {
-      const group = new THREE.Group();
-      group.position.set(...node.position);
-
-      const plinthGeo = new THREE.BoxGeometry(
-        0.58 + index * 0.1,
-        0.16,
-        0.44 + index * 0.06
+    VILLA_NODES.forEach((node) => {
+      const { group, hitBox } = buildVillaCompound(
+        node,
+        materials,
+        disposables,
+        isMobile,
+        initialVillaIdRef.current
       );
-      const plinthMat = new THREE.MeshStandardMaterial({
-        color: 0x2c2824,
-        roughness: 0.7,
-        metalness: 0.2,
-      });
-      const plinth = new THREE.Mesh(plinthGeo, plinthMat);
-      plinth.position.y = 0.08;
-      group.add(plinth);
-
-      const pavilionGeo = new THREE.BoxGeometry(
-        0.46 + index * 0.08,
-        0.14,
-        0.34 + index * 0.05
-      );
-      const pavilionMat = new THREE.MeshStandardMaterial({
-        color: 0xf7f4ee,
-        emissive: 0xa2583e,
-        emissiveIntensity: node.id === initialVillaIdRef.current ? 0.55 : 0.12,
-        roughness: 0.35,
-        metalness: 0.3,
-      });
-      const pavilion = new THREE.Mesh(pavilionGeo, pavilionMat);
-      pavilion.position.set(0.04, 0.23, 0.02);
-      group.add(pavilion);
-
-      const poolGeo = new THREE.BoxGeometry(0.42, 0.03, 0.14);
-      const poolMat = new THREE.MeshStandardMaterial({
-        color: 0x7ab3a8,
-        emissive: 0x3b6e65,
-        emissiveIntensity: 0.45,
-        roughness: 0.1,
-        metalness: 0.8,
-      });
-      const pool = new THREE.Mesh(poolGeo, poolMat);
-      pool.position.set(0, 0.17, 0.24);
-      group.add(pool);
-
-      const ringGeo = new THREE.RingGeometry(0.34, 0.38, 32);
-      ringGeo.rotateX(-Math.PI / 2);
-      const ringMat = new THREE.MeshBasicMaterial({
-        color: 0xc57d65,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: node.id === initialVillaIdRef.current ? 0.95 : 0.28,
-      });
-      const ring = new THREE.Mesh(ringGeo, ringMat);
-      ring.position.y = 0.02;
-      group.add(ring);
-
-      const linePoints = [
-        new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, 0.68, 0),
-      ];
-      const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
-      const lineMat = new THREE.LineBasicMaterial({
-        color: 0xc57d65,
-        transparent: true,
-        opacity: 0.75,
-      });
-      const datumLine = new THREE.Line(lineGeo, lineMat);
-      group.add(datumLine);
-
-      group.userData = { pavilionMat, ringMat, ring };
       villaGroups[node.id] = group;
+      villaHitBoxes[node.id] = hitBox;
       worldGroup.add(group);
-
-      disposableGeometries.push(
-        plinthGeo,
-        pavilionGeo,
-        poolGeo,
-        ringGeo,
-        lineGeo
-      );
-      disposableMaterials.push(
-        plinthMat,
-        pavilionMat,
-        poolMat,
-        ringMat,
-        lineMat
-      );
     });
 
+    // Compass Datum
     const compassGroup = new THREE.Group();
-    const outerRingGeo = new THREE.RingGeometry(2.38, 2.4, 64);
+    const outerRingGeo = new THREE.RingGeometry(2.48, 2.5, 64);
     outerRingGeo.rotateX(-Math.PI / 2);
+    disposables.push(outerRingGeo);
     const outerRingMat = new THREE.MeshBasicMaterial({
       color: 0x8a847a,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.26,
     });
+    disposables.push(outerRingMat);
     const outerRing = new THREE.Mesh(outerRingGeo, outerRingMat);
-    outerRing.position.y = 0.65;
+    outerRing.position.y = 0.72;
     compassGroup.add(outerRing);
     worldGroup.add(compassGroup);
 
-    disposableGeometries.push(outerRingGeo);
-    disposableMaterials.push(outerRingMat);
-
+    const raycaster = new THREE.Raycaster();
     sceneObjectsRef.current = {
       camera,
       targetLookAt,
       villaGroups,
+      villaHitBoxes,
       monolithGroup: worldGroup,
+      raycaster,
+      scene,
     };
 
+    // User Interaction Handlers
     let pointerX = 0;
     let pointerY = 0;
     let isDragging = false;
     let dragStartX = 0;
+    let dragStartY = 0;
     let userYawOffset = 0;
+    let userPitchOffset = 0;
+    let hasDraggedMeaningfully = false;
 
     const handlePointerMove = (e: PointerEvent) => {
       const rect = container.getBoundingClientRect();
@@ -418,20 +222,58 @@ export default function Sanctuary3DScene({
       pointerX = nx;
       pointerY = ny;
 
+      raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
+      const hitObjects = Object.values(villaHitBoxes);
+      const intersects = raycaster.intersectObjects(hitObjects);
+
+      if (intersects.length > 0) {
+        const hitId = intersects[0].object.userData.villaId as string;
+        container.style.cursor = "pointer";
+        setHoveredVillaId(hitId);
+      } else {
+        container.style.cursor = isDragging ? "grabbing" : "grab";
+        setHoveredVillaId(null);
+      }
+
       if (isDragging) {
         const deltaX = e.clientX - dragStartX;
-        userYawOffset += deltaX * 0.005;
+        const deltaY = e.clientY - dragStartY;
+        if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+          hasDraggedMeaningfully = true;
+        }
+        userYawOffset += deltaX * 0.0055;
+        userPitchOffset += deltaY * 0.003;
+        userPitchOffset = THREE.MathUtils.clamp(userPitchOffset, -0.3, 0.4);
         dragStartX = e.clientX;
+        dragStartY = e.clientY;
       }
     };
 
     const handlePointerDown = (e: PointerEvent) => {
       isDragging = true;
+      hasDraggedMeaningfully = false;
       dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      container.style.cursor = "grabbing";
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (e: PointerEvent) => {
       isDragging = false;
+      container.style.cursor = "grab";
+
+      if (!hasDraggedMeaningfully) {
+        const rect = container.getBoundingClientRect();
+        const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const ny = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(new THREE.Vector2(nx, ny), camera);
+        const hitObjects = Object.values(villaHitBoxes);
+        const intersects = raycaster.intersectObjects(hitObjects);
+
+        if (intersects.length > 0) {
+          const hitId = intersects[0].object.userData.villaId as string;
+          onSelectVillaRef.current?.(hitId);
+        }
+      }
     };
 
     container.addEventListener("pointermove", handlePointerMove);
@@ -449,8 +291,8 @@ export default function Sanctuary3DScene({
 
     const handleResize = () => {
       if (!container) return;
-      const newW = container.clientWidth || 520;
-      const newH = container.clientHeight || 620;
+      const newW = container.clientWidth || 540;
+      const newH = container.clientHeight || 640;
       camera.aspect = newW / newH;
       camera.updateProjectionMatrix();
       renderer.setSize(newW, newH);
@@ -469,30 +311,40 @@ export default function Sanctuary3DScene({
       if (!isPausedRef.current) {
         worldGroup.rotation.y = THREE.MathUtils.lerp(
           worldGroup.rotation.y,
-          userYawOffset + pointerX * 0.28 + Math.sin(elapsed * 0.25) * 0.08,
+          userYawOffset + pointerX * 0.24 + Math.sin(elapsed * 0.22) * 0.08,
           0.05
         );
         worldGroup.rotation.x = THREE.MathUtils.lerp(
           worldGroup.rotation.x,
-          pointerY * 0.1,
+          userPitchOffset + pointerY * 0.1,
           0.05
         );
-        compassGroup.rotation.y = elapsed * 0.06;
+        compassGroup.rotation.y = elapsed * 0.05;
 
-        // Drift valley mist gently along the gorge contour
-        const mistAttr = mistGeo.attributes.position as THREE.BufferAttribute;
-        for (let i = 0; i < mistCount; i++) {
+        const mistAttr = landscape.mistGeo.attributes
+          .position as THREE.BufferAttribute;
+        for (let i = 0; i < landscape.mistCount; i++) {
           mistAttr.setY(
             i,
-            mistBaseY[i] + Math.sin(elapsed * 0.55 + i * 0.7) * 0.06
+            landscape.mistBaseY[i] + Math.sin(elapsed * 0.55 + i * 0.6) * 0.06
           );
         }
         mistAttr.needsUpdate = true;
 
+        const fireflyAttr = landscape.fireflyGeo.attributes
+          .position as THREE.BufferAttribute;
+        for (let j = 0; j < landscape.fireflyCount; j++) {
+          fireflyAttr.setY(
+            j,
+            landscape.fireflyBaseY[j] + Math.sin(elapsed * 1.2 + j * 1.5) * 0.08
+          );
+        }
+        fireflyAttr.needsUpdate = true;
+
         Object.entries(villaGroups).forEach(([, grp]) => {
           const ring = grp.userData.ring as THREE.Mesh;
           if (ring) {
-            const scale = 1 + Math.sin(elapsed * 2.2) * 0.05;
+            const scale = 1 + Math.sin(elapsed * 2.2) * 0.04;
             ring.scale.set(scale, scale, 1);
           }
         });
@@ -511,13 +363,15 @@ export default function Sanctuary3DScene({
       window.removeEventListener("pointerup", handlePointerUp);
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerdown", handlePointerDown);
+      woodTexture.dispose();
+      stoneTexture.dispose();
       if (mistTexture) mistTexture.dispose();
-      disposableGeometries.forEach((g) => g.dispose());
-      disposableMaterials.forEach((m) => m.dispose());
+      disposables.forEach((item) => item.dispose());
       renderer.dispose();
     };
   }, [webglSupported]);
 
+  // Cinematic Camera Transitions
   useEffect(() => {
     const ctx = sceneObjectsRef.current;
     if (!ctx) return;
@@ -525,14 +379,14 @@ export default function Sanctuary3DScene({
     const targetNode =
       VILLA_NODES.find((n) => n.id === activeVillaId) || VILLA_NODES[0];
 
-    const destCam = overviewMode ? [0, 3.25, 4.75] : targetNode.cameraPos;
-    const destLook = overviewMode ? [0, 0.05, 0] : targetNode.lookAt;
+    const destCam = overviewMode ? [0, 3.4, 4.8] : targetNode.cameraPos;
+    const destLook = overviewMode ? [0, 0.1, 0] : targetNode.lookAt;
 
     gsap.to(ctx.camera.position, {
       x: destCam[0],
       y: destCam[1],
       z: destCam[2],
-      duration: 1.35,
+      duration: 1.45,
       ease: "power3.out",
       overwrite: "auto",
     });
@@ -541,31 +395,36 @@ export default function Sanctuary3DScene({
       x: destLook[0],
       y: destLook[1],
       z: destLook[2],
-      duration: 1.35,
+      duration: 1.45,
       ease: "power3.out",
       overwrite: "auto",
     });
 
     Object.entries(ctx.villaGroups).forEach(([id, group]) => {
       const isSelected = id === activeVillaId && !overviewMode;
-      const { pavilionMat, ringMat } = group.userData as {
-        pavilionMat: THREE.MeshStandardMaterial;
+      const { ringMat, villaModel } = group.userData as {
         ringMat: THREE.MeshBasicMaterial;
+        villaModel: THREE.Group;
       };
 
-      gsap.to(pavilionMat, {
-        emissiveIntensity: isSelected ? 0.65 : 0.14,
-        duration: 0.8,
-      });
       gsap.to(ringMat, {
-        opacity: isSelected ? 0.95 : 0.25,
+        opacity: isSelected ? 0.95 : 0.22,
         duration: 0.8,
       });
+
       gsap.to(group.position, {
         y:
           (VILLA_NODES.find((n) => n.id === id)?.position[1] ?? 0) +
-          (isSelected ? 0.08 : 0),
-        duration: 0.9,
+          (isSelected ? 0.06 : 0),
+        duration: 0.85,
+        ease: "power2.out",
+      });
+
+      gsap.to(villaModel.scale, {
+        x: isSelected ? 1.04 : 1,
+        y: isSelected ? 1.04 : 1,
+        z: isSelected ? 1.04 : 1,
+        duration: 0.8,
         ease: "power2.out",
       });
     });
@@ -576,9 +435,19 @@ export default function Sanctuary3DScene({
   const fallbackVilla =
     VILLA_RESIDENCES.find((v) => v.id === activeVillaId) || VILLA_RESIDENCES[0];
 
+  const handleSelectVillaInternal = useCallback(
+    (id: string) => {
+      setOverviewMode(false);
+      if (onSelectVilla) {
+        onSelectVilla(id);
+      }
+    },
+    [onSelectVilla]
+  );
+
   if (!webglSupported) {
     return (
-      <div className="relative w-full h-full bg-[#181614] overflow-hidden">
+      <div className="relative w-full h-full bg-[#151412] overflow-hidden">
         <Image
           src={fallbackVilla.heroImage}
           alt={`${fallbackVilla.name} architectural elevation`}
@@ -593,7 +462,7 @@ export default function Sanctuary3DScene({
               <button
                 key={node.id}
                 type="button"
-                onClick={() => onSelectVilla?.(node.id)}
+                onClick={() => handleSelectVillaInternal(node.id)}
                 className={`min-h-[44px] px-2 text-left text-[9px] tracking-[0.15em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden ${
                   node.id === activeVillaId
                     ? "bg-[#8D4A33] text-white font-medium"
@@ -618,28 +487,35 @@ export default function Sanctuary3DScene({
   }
 
   return (
-    <div className="relative w-full h-full select-none bg-[#181614]">
+    <div className="relative w-full h-full select-none bg-[#151412]">
       <div
         ref={mountRef}
         className="w-full h-full cursor-grab active:cursor-grabbing"
-        aria-label="Interactive 3D topographic model of AMARTA Sayan Gorge and three private pool residences"
+        aria-label="High-fidelity 3D architectural model of AMARTA Sayan Gorge and three private pool residences"
         role="img"
       />
 
-      {/* Top HUD Telemetry */}
-      <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none gap-2">
-        <div className="bg-[#151412]/85 backdrop-blur-xs border border-white/15 px-3 py-2 text-[9px] tracking-[0.22em] uppercase text-[#F7F4EE]">
-          <span className="text-[#C57D65] font-medium">3D Gorge Relief</span>
-          <span className="hidden sm:inline mx-1.5 text-white/30">&bull;</span>
-          <span className="hidden sm:inline">Drag to Orbit</span>
+      {/* Top Telemetry & Controls HUD */}
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none gap-2">
+        <div className="bg-[#151412]/90 backdrop-blur-md border border-white/15 px-3 py-2 text-[8.5px] sm:text-[9px] tracking-[0.2em] uppercase text-[#F7F4EE] shadow-lg flex items-center gap-2">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#C57D65] animate-pulse" />
+          <span className="text-[#C57D65] font-semibold">Sayan Gorge 3D</span>
+          <span className="hidden sm:inline text-white/30">&bull;</span>
+          <span className="hidden sm:inline text-[#E2DDD3]">
+            PBR Shadow &amp; Terrain
+          </span>
         </div>
 
         <div className="flex items-center gap-1.5 pointer-events-auto">
           <button
             type="button"
             onClick={() => setOverviewMode((prev) => !prev)}
-            aria-label="Reset 3D valley camera overview"
-            className="min-h-[44px] px-3 py-2 bg-[#151412]/85 hover:bg-[#8D4A33] text-[#F7F4EE] border border-white/20 text-[9px] tracking-[0.18em] uppercase transition-colors flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden"
+            aria-label="Switch between Valley Axis overview and Residence focus"
+            className={`min-h-[42px] px-2.5 sm:px-3 py-1.5 border text-[8.5px] sm:text-[9px] tracking-[0.16em] uppercase transition-all flex items-center gap-1.5 focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden ${
+              overviewMode
+                ? "bg-[#8D4A33] border-[#C57D65] text-white font-medium"
+                : "bg-[#151412]/90 hover:bg-[#8D4A33] text-[#F7F4EE] border-white/20"
+            }`}
           >
             <RotateCcw className="w-3.5 h-3.5 text-[#C57D65]" />
             <span>{overviewMode ? "Focus Villa" : "Valley Axis"}</span>
@@ -649,7 +525,7 @@ export default function Sanctuary3DScene({
             type="button"
             onClick={() => setIsPaused((prev) => !prev)}
             aria-label={isPaused ? "Resume 3D motion" : "Pause 3D motion"}
-            className="min-h-[44px] min-w-[44px] p-2 bg-[#151412]/85 hover:bg-[#8D4A33] text-[#F7F4EE] border border-white/20 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden"
+            className="min-h-[42px] min-w-[42px] p-2 bg-[#151412]/90 hover:bg-[#8D4A33] text-[#F7F4EE] border border-white/20 transition-colors flex items-center justify-center focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden"
           >
             {isPaused ? (
               <Play className="w-3.5 h-3.5 text-[#C57D65]" />
@@ -660,49 +536,75 @@ export default function Sanctuary3DScene({
         </div>
       </div>
 
-      {/* Interactive 3D Node Switcher Overlay */}
-      <div className="absolute bottom-4 left-4 right-4 space-y-2 pointer-events-auto">
-        <div className="grid grid-cols-3 gap-1.5 bg-[#151412]/90 backdrop-blur-xs p-1.5 border border-white/15">
+      {/* Hover Tooltip when cursor hovers over a 3D villa */}
+      {hoveredVillaId && hoveredVillaId !== activeVillaId && (
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 pointer-events-none bg-[#151412]/95 border border-[#C57D65]/60 px-3 py-1.5 text-[8.5px] tracking-[0.2em] uppercase text-[#F7F4EE] shadow-xl animate-fade-in flex items-center gap-1.5">
+          <Sparkles className="w-3 h-3 text-[#C57D65]" />
+          <span>Click to Inspect {hoveredVillaId.replace(/-/g, " ")}</span>
+        </div>
+      )}
+
+      {/* Bottom Architectural Specification Card & Node Selector */}
+      <div className="absolute bottom-3 left-3 right-3 space-y-2 pointer-events-auto">
+        <div className="grid grid-cols-3 gap-1 bg-[#151412]/95 backdrop-blur-md p-1 border border-white/15">
           {VILLA_NODES.map((node) => {
             const isSelected = node.id === activeVillaId && !overviewMode;
             return (
               <button
                 key={node.id}
                 type="button"
-                onClick={() => {
-                  setOverviewMode(false);
-                  if (onSelectVilla) {
-                    onSelectVilla(node.id);
-                  }
-                }}
-                className={`min-h-[44px] py-2 px-2 text-left transition-all text-[9px] tracking-[0.15em] uppercase focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden ${
+                onClick={() => handleSelectVillaInternal(node.id)}
+                className={`min-h-[42px] py-1.5 px-2 text-left transition-all text-[8.5px] sm:text-[9px] tracking-[0.14em] uppercase focus-visible:ring-2 focus-visible:ring-[#C57D65] focus:outline-hidden ${
                   isSelected
-                    ? "bg-[#8D4A33] text-white font-medium"
+                    ? "bg-[#8D4A33] text-white font-medium shadow-xs"
                     : "bg-transparent text-[#E2DDD3] hover:bg-white/10"
                 }`}
               >
+                <span className="block truncate font-mono text-[8px] text-[#C57D65]">
+                  {node.elevationMeters}M
+                </span>
                 <span className="block truncate">{node.label}</span>
               </button>
             );
           })}
         </div>
 
-        <div className="bg-[#151412]/90 backdrop-blur-xs border border-white/15 px-3.5 py-2.5 flex items-center justify-between text-[#F7F4EE]">
-          <div>
-            <span className="text-[8px] tracking-[0.26em] uppercase text-[#C57D65] block">
-              {overviewMode
-                ? "Full Sayan Ridge Contour • 240m Datum"
-                : activeNode.elevationLabel}
-            </span>
-            <p className="font-serif text-sm sm:text-base text-white font-light">
-              {overviewMode
-                ? "Ayung River Gorge & 3 Monolith Compounds"
-                : fallbackVilla.name}
-            </p>
+        <div className="bg-[#151412]/95 backdrop-blur-md border border-white/15 p-2.5 sm:p-3 text-[#F7F4EE] shadow-xl">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[8px] tracking-[0.26em] uppercase text-[#C57D65] font-mono">
+                  {overviewMode
+                    ? "Sayan Gorge Axis • 240m Datum"
+                    : activeNode.elevationLabel}
+                </span>
+                {!overviewMode && (
+                  <span className="inline-block text-[7.5px] tracking-[0.18em] uppercase text-[#A39E93] border border-white/15 px-1.5 py-0.2">
+                    {activeNode.sqm} m² • {activeNode.poolLength}m Pool
+                  </span>
+                )}
+              </div>
+              <p className="font-serif text-sm sm:text-base text-white font-light mt-0.5">
+                {overviewMode
+                  ? "Ayung River Gorge & 3 Monolithic Residences"
+                  : fallbackVilla.name}
+              </p>
+              <p className="text-[9.5px] text-[#A39E93] line-clamp-1 mt-0.5">
+                {overviewMode
+                  ? "Drag to orbit valley • Click any villa compound to inspect"
+                  : activeNode.architecturalType}
+              </p>
+            </div>
+
+            <div className="text-right shrink-0">
+              <span className="text-[8px] tracking-[0.2em] uppercase text-[#C57D65] block font-mono">
+                {overviewMode ? "3D PANORAMA" : "ARCHITECTURAL"}
+              </span>
+              <span className="text-[9px] tracking-[0.16em] uppercase text-[#E2DDD3] border border-white/20 px-2 py-0.5 inline-block mt-1">
+                WebGL PBR
+              </span>
+            </div>
           </div>
-          <span className="text-[9px] tracking-[0.2em] uppercase text-[#E2DDD3] border border-white/20 px-2 py-0.5 shrink-0">
-            WebGL 3D
-          </span>
         </div>
       </div>
     </div>
