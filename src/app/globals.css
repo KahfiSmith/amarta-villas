@@ -8,15 +8,15 @@
 @theme {
   --font-serif: var(--font-serif), Newsreader, Georgia, serif;
   --font-sans: var(--font-sans), Plus Jakarta Sans, system-ui, sans-serif;
-  
+
   --color-sanctuary-bg: #F7F4EE;
   --color-sanctuary-surface: #EFECE4;
   --color-sanctuary-card: #FFFFFF;
   --color-sanctuary-ink: #151412;
   --color-sanctuary-muted: #5C574F;
-  --color-sanctuary-subtle: #8A847A;
+  --color-sanctuary-subtle: #665F56;
   --color-sanctuary-border: #E2DDD3;
-  --color-sanctuary-terracotta: #A2583E;
+  --color-sanctuary-terracotta: #8D4A33;
   --color-sanctuary-terracotta-soft: #C57D65;
   --color-sanctuary-moss: #3D4838;
   --color-sanctuary-moss-light: #5F6E56;
@@ -25,6 +25,9 @@
 
 html {
   scroll-behavior: smooth;
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
 }
 
 body {
@@ -34,6 +37,6 @@ body {
 }
 
 ::selection {
-  background: #A2583E;
+  background: #8D4A33;
   color: #FFFFFF;
 }
