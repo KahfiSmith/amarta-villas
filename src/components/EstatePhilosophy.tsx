@@ -135,7 +135,6 @@ export default function EstatePhilosophy() {
       className="py-16 sm:py-26 lg:py-32 bg-[#EFECE4] border-t border-b border-[#E2DDD3]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Section Header */}
         <div className="relative pb-6 mb-12 sm:mb-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 philosophy-header-reveal">
@@ -155,11 +154,8 @@ export default function EstatePhilosophy() {
           <div className="philosophy-rule-draw absolute bottom-0 left-0 right-0 h-[1px] bg-[#E2DDD3]" />
         </div>
 
-        {/* Monograph Split Composition */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          {/* Left Column: Interactive Material & Passive Microclimate Anatomy */}
           <div className="lg:col-span-6 space-y-6">
-            {/* Interactive Material Specimen Selector Tabs */}
             <div className="border border-[#E2DDD3] bg-[#F7F4EE] p-1.5 flex flex-wrap gap-1">
               {SPECIMENS.map((specimen) => {
                 const isSelected = specimen.id === activeSpecimenId;
@@ -192,7 +188,6 @@ export default function EstatePhilosophy() {
               })}
             </div>
 
-            {/* Interactive Specimen Photo Frame with 3D Tilt & Natural Breeze Stream Overlay */}
             <div
               onPointerMove={handleCardPointerMove}
               onPointerLeave={handleCardPointerLeave}
@@ -223,12 +218,10 @@ export default function EstatePhilosophy() {
                 </motion.div>
               </AnimatePresence>
 
-              {/* Natural Mountain Breeze & Valley Mist Stream Canvas */}
               <div className="absolute inset-0 z-10 pointer-events-none">
                 <BreezeStreamCanvas className="w-full h-full" intensity={1.1} />
               </div>
 
-              {/* Bottom Specimen Legend Overlay */}
               <div className="absolute bottom-3 left-3 right-3 z-20 flex items-end justify-between gap-3 pointer-events-none">
                 <div className="bg-[#151412]/90 backdrop-blur-xs px-3 py-2 border border-white/15 max-w-[80%]">
                   <div className="flex items-center gap-1.5 text-[8px] tracking-[0.24em] uppercase text-[#C57D65]">
@@ -251,7 +244,6 @@ export default function EstatePhilosophy() {
               </div>
             </div>
 
-            {/* Tactile Architectural Telemetry Badges */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="p-3 bg-[#F7F4EE] border border-[#E2DDD3]">
                 <div className="flex items-center gap-1.5 text-[8px] tracking-[0.2em] uppercase text-[#8D4A33] font-medium">
@@ -284,7 +276,6 @@ export default function EstatePhilosophy() {
               </div>
             </div>
 
-            {/* Architectural Pull-Quote framed by horizontal rules */}
             <div className="border-y border-[#E2DDD3] py-5">
               <blockquote className="font-serif italic text-base sm:text-lg text-[#151412] leading-snug font-light">
                 &ldquo;We did not level the hillside; we sculpted living
@@ -297,7 +288,6 @@ export default function EstatePhilosophy() {
             </div>
           </div>
 
-          {/* Right Column: The Four Disciplines */}
           <div className="lg:col-span-6 space-y-6">
             <div className="border-b border-[#E2DDD3] pb-3 flex items-center justify-between">
               <span className="text-[9px] tracking-[0.28em] uppercase text-[#665F56] font-semibold">
@@ -308,7 +298,6 @@ export default function EstatePhilosophy() {
               </span>
             </div>
 
-            {/* Open Editorial List */}
             <div className="philosophy-pillar-list divide-y divide-[#E2DDD3]">
               {ESTATE_PHILOSOPHY.map((pillar) => (
                 <div
@@ -342,7 +331,6 @@ export default function EstatePhilosophy() {
               ))}
             </div>
 
-            {/* Bottom Monograph Footer */}
             <div className="pt-5 border-t border-[#E2DDD3] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <p className="text-xs text-[#5C574F] font-light">
                 Private estate monograph and botanical study available upon

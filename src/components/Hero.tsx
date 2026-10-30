@@ -203,14 +203,12 @@ export default function Hero({ onQuickSelect }: HeroProps) {
     >
       <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col justify-center">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
-          {/* Left Column: Monograph Editorial Copy */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
             className="lg:col-span-6 xl:col-span-7 space-y-7"
           >
-            {/* Top Telemetry Monograph Badge */}
             <div className="hero-telemetry-badge flex items-center gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-[#8D4A33] animate-pulse" />
               <span className="text-[9px] sm:text-[10px] tracking-[0.28em] uppercase text-[#665F56] font-medium font-mono">
@@ -218,7 +216,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
               </span>
             </div>
 
-            {/* Main Editorial Headline */}
             <div className="space-y-1">
               <div className="overflow-hidden">
                 <h1 className="hero-editorial-line font-serif text-4xl sm:text-6xl xl:text-7xl text-[#151412] leading-[1.02] font-light tracking-tight">
@@ -237,7 +234,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
               </div>
             </div>
 
-            {/* Editorial Body */}
             <p className="hero-editorial-body text-xs sm:text-sm lg:text-base text-[#5C574F] max-w-xl font-light leading-relaxed">
               Anchored along the ancient limestone ridges of Ubud&apos;s Ayung
               gorge, AMARTA is an unhurried sanctuary of three monolithic
@@ -245,7 +241,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
               canopy and artisan volcanic stone terracing.
             </p>
 
-            {/* Quick Residence Selector Tabs */}
             <div className="space-y-2 pt-1">
               <span className="text-[9px] tracking-[0.26em] uppercase text-[#665F56] font-semibold block">
                 Select Residence Monograph:
@@ -286,7 +281,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
               </div>
             </div>
 
-            {/* CTA Action Cluster */}
             <motion.div
               variants={editorialFadeUp}
               className="hero-cta-cluster flex flex-wrap items-center gap-4 pt-2"
@@ -314,7 +308,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
             </motion.div>
           </motion.div>
 
-          {/* Right Column: Interactive Architectural Monograph Frame with Parallax Tilt & Hotspots */}
           <div className="lg:col-span-6 xl:col-span-5">
             <div ref={parallaxFrameRef}>
               <motion.div
@@ -323,7 +316,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
                 transition={{ duration: 0.85, delay: 0.15, ease: SANCTUARY_EASE }}
                 className="space-y-2.5"
               >
-                {/* Viewport Header Bar */}
                 <div className="flex items-center justify-between border border-[#E2DDD3] bg-[#EFECE4] px-3.5 py-2">
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#8D4A33] animate-pulse" />
@@ -336,7 +328,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
                   </span>
                 </div>
 
-                {/* Perspective Card Container */}
                 <div
                   onPointerMove={handlePointerMove}
                   onPointerLeave={handlePointerLeave}
@@ -365,12 +356,10 @@ export default function Hero({ onQuickSelect }: HeroProps) {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#151412]/92 via-[#151412]/20 to-transparent pointer-events-none" />
 
-                      {/* Top Right Monograph Number Badge */}
                       <div className="absolute top-4 right-4 bg-[#F7F4EE]/95 px-3 py-1 text-[9px] tracking-[0.26em] uppercase text-[#151412] border border-[#E2DDD3]">
                         {currentVilla.balineseName}
                       </div>
 
-                      {/* Interactive Architectural Hotspot Pins */}
                       {hotspots.map((spot) => {
                         const isHotspotActive = activeHotspotId === spot.id;
                         return (
@@ -393,7 +382,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
                               <Plus className="w-3.5 h-3.5 text-[#C57D65]" />
                             </button>
 
-                            {/* Floating Micro-Card on Hotspot Hover/Click */}
                             <AnimatePresence>
                               {isHotspotActive && (
                                 <motion.div
@@ -420,7 +408,6 @@ export default function Hero({ onQuickSelect }: HeroProps) {
                         );
                       })}
 
-                      {/* Bottom Architectural Specification Monograph Card */}
                       <div className="absolute bottom-4 left-4 right-4 text-[#F7F4EE] bg-[#151412]/90 backdrop-blur-sm p-4 border border-white/15">
                         <span className="text-[8.5px] tracking-[0.3em] uppercase text-[#C57D65] block mb-1">
                           {currentVilla.balineseName} &bull; {currentVilla.viewType}

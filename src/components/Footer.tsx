@@ -23,7 +23,6 @@ export default function Footer() {
     <footer className="bg-[#151412] text-[#F7F4EE] pt-16 sm:pt-24 pb-12 border-t border-[#2B2724]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-14 pb-16 border-b border-[#2B2724]">
-          {/* Brand & Monograph Column */}
           <div className="lg:col-span-5 space-y-6">
             <Link
               href="/"
@@ -48,7 +47,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation Links */}
           <div className="lg:col-span-2 space-y-4">
             <span className="text-[9px] tracking-[0.28em] uppercase text-[#C57D65] font-medium block">
               Sanctuary Index
@@ -76,7 +74,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Direct Concierge Contact */}
           <div className="lg:col-span-2 space-y-4">
             <span className="text-[9px] tracking-[0.28em] uppercase text-[#C57D65] font-medium block">
               Butler Desk
@@ -122,7 +119,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* The Valley Gazette (Newsletter) */}
           <div className="lg:col-span-3 space-y-4">
             <span className="text-[9px] tracking-[0.28em] uppercase text-[#C57D65] font-medium block">
               The Valley Gazette
@@ -187,7 +183,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Legal Sign-off */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-[10px] text-[#A8A299] gap-4 font-light">
           <div>
             &copy; 2026 AMARTA Sanctuary &amp; Private Villas. All rights

@@ -55,7 +55,6 @@ export default function BreezeStreamCanvas({
     };
     window.addEventListener("resize", handleResize);
 
-    // Generate streamline particles
     const particleCount = 28;
     const particles: StreamlineParticle[] = [];
 
@@ -101,7 +100,6 @@ export default function BreezeStreamCanvas({
           }
         }
 
-        // Deflect gently around cursor if active
         let targetY = p.y + Math.sin(t * 1.2 + p.phase) * p.waveAmp;
         if (pointerPosRef.current.active) {
           const dx = p.x - pointerPosRef.current.x;
@@ -113,7 +111,6 @@ export default function BreezeStreamCanvas({
           }
         }
 
-        // Draw soft glowing streamline
         const grad = ctx.createLinearGradient(
           p.x - p.length,
           targetY,
@@ -147,7 +144,6 @@ export default function BreezeStreamCanvas({
         );
         ctx.stroke();
 
-        // Subtle leading mist particle
         ctx.fillStyle = `rgba(247, 244, 238, ${p.opacity * 0.8})`;
         ctx.beginPath();
         ctx.arc(endX, targetY, p.thickness * 0.75, 0, Math.PI * 2);
@@ -192,7 +188,6 @@ export default function BreezeStreamCanvas({
         className="w-full h-full block"
         aria-hidden="true"
       />
-      {/* Breeze Telemetry Indicator & Toggle */}
       <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 pointer-events-auto z-10">
         <button
           type="button"

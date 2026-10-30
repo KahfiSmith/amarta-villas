@@ -177,7 +177,6 @@ export default function BookingConcierge({
       className="py-16 sm:py-28 lg:py-36 bg-[#F7F4EE]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-[#E2DDD3] pb-6 mb-12 sm:mb-16 gap-6">
           <div className="space-y-3 concierge-reveal">
             <span className="text-[9px] sm:text-[10px] tracking-[0.3em] uppercase text-[#8D4A33] font-medium block">
@@ -194,9 +193,7 @@ export default function BookingConcierge({
           </p>
         </div>
 
-        {/* Atelier Grid Composition */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          {/* Left Column: Folio Form with AnimatePresence State Transitions */}
           <div className="concierge-reveal lg:col-span-7 bg-[#FFFFFF] border border-[#E2DDD3] p-6 sm:p-10 lg:p-12 shadow-[0_4px_24px_rgba(21,20,18,0.02)]">
             <AnimatePresence mode="wait">
               {isSubmitted ? (
@@ -287,7 +284,6 @@ export default function BookingConcierge({
                   onSubmit={handleSubmitForm}
                   className="space-y-10"
                 >
-                  {/* 01. Residence Selection */}
                   <div className="space-y-4">
                     <div className="flex items-baseline justify-between border-b border-[#E2DDD3] pb-2">
                       <span className="text-[9px] tracking-[0.28em] uppercase text-[#665F56] font-semibold">
@@ -336,7 +332,6 @@ export default function BookingConcierge({
                     </div>
                   </div>
 
-                  {/* 02. Itinerary Dates & Party Size */}
                   <div className="space-y-4">
                     <div className="flex items-baseline justify-between border-b border-[#E2DDD3] pb-2">
                       <span className="text-[9px] tracking-[0.28em] uppercase text-[#665F56] font-semibold">
@@ -456,7 +451,6 @@ export default function BookingConcierge({
                     </div>
                   </div>
 
-                  {/* 03. Bespoke Additions */}
                   <div className="space-y-4">
                     <div className="flex items-baseline justify-between border-b border-[#E2DDD3] pb-2">
                       <span className="text-[9px] tracking-[0.28em] uppercase text-[#665F56] font-semibold">
@@ -564,7 +558,6 @@ export default function BookingConcierge({
                     </div>
                   </div>
 
-                  {/* 04. Guest Dossier */}
                   <div className="space-y-4">
                     <div className="flex items-baseline justify-between border-b border-[#E2DDD3] pb-2">
                       <span className="text-[9px] tracking-[0.28em] uppercase text-[#665F56] font-semibold">
@@ -652,7 +645,6 @@ export default function BookingConcierge({
                     </div>
                   </div>
 
-                  {/* Action Gateways */}
                   <div className="pt-2 flex flex-col sm:flex-row gap-4">
                     <motion.a
                       href={generateWhatsAppUrl()}
@@ -683,7 +675,6 @@ export default function BookingConcierge({
             </AnimatePresence>
           </div>
 
-          {/* Right Column: Architectural Investment Ledger */}
           <div className="concierge-reveal lg:col-span-5 space-y-6">
             <div className="bg-[#EFECE4] border border-[#E2DDD3] p-6 sm:p-8 space-y-6">
               <div className="border-b border-[#E2DDD3] pb-4">
@@ -700,7 +691,6 @@ export default function BookingConcierge({
                 </span>
               </div>
 
-              {/* Ledger Lines with Animated Numbers & AnimatePresence Add-Ons */}
               <div className="space-y-3.5 text-xs text-[#5C574F] font-light">
                 <div className="flex justify-between">
                   <span>Itinerary Duration</span>
@@ -819,7 +809,6 @@ export default function BookingConcierge({
               </div>
             </div>
 
-            {/* Direct Contact Monograph Box */}
             <div className="p-6 bg-[#FFFFFF] border border-[#E2DDD3] space-y-3">
               <span className="text-[9px] tracking-[0.26em] uppercase text-[#665F56] block font-semibold">
                 Direct Estate Concierge

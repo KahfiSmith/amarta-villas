@@ -59,7 +59,6 @@ export default function GuestJournal() {
       className="py-16 sm:py-28 lg:py-36 bg-[#EFECE4] border-t border-b border-[#E2DDD3]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Section Header */}
         <div className="relative pb-6 mb-14 sm:mb-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 journal-reveal">
@@ -81,9 +80,7 @@ export default function GuestJournal() {
           />
         </div>
 
-        {/* Archival Guestbook Composition */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* Featured Lead Chronicle */}
           {featuredReview && (
             <div className="journal-reveal lg:col-span-7">
               <AnimatePresence mode="wait">
@@ -133,7 +130,6 @@ export default function GuestJournal() {
             </div>
           )}
 
-          {/* Archival Ledger Entries Selector */}
           <div className="journal-reveal lg:col-span-5 space-y-6 lg:border-l lg:border-[#E2DDD3] lg:pl-12">
             <div className="flex items-center justify-between border-b border-[#E2DDD3] pb-2">
               <span className="text-[9px] tracking-[0.28em] uppercase text-[#665F56] font-semibold block">

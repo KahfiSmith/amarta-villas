@@ -60,7 +60,6 @@ export default function ArrivalElevationMap({
 
   return (
     <div className="relative border border-[#E2DDD3] bg-[#151412] text-[#F7F4EE] overflow-hidden select-none">
-      {/* Top Telemetry Header */}
       <div className="p-3.5 border-b border-white/10 flex items-center justify-between gap-3 bg-[#181614]/90">
         <div className="flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-[#C57D65] animate-pulse" />
@@ -74,9 +73,7 @@ export default function ArrivalElevationMap({
         </div>
       </div>
 
-      {/* SVG Architectural Topographic Cross-Section */}
       <div className="relative aspect-[16/9] w-full p-4 flex items-center justify-center">
-        {/* Ambient Contour Line Grid Background */}
         <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#C57D65_1px,transparent_1px)] [background-size:16px_16px]" />
 
         <svg
@@ -84,14 +81,12 @@ export default function ArrivalElevationMap({
           className="w-full h-full overflow-visible relative z-10"
         >
           <defs>
-            {/* Topographic Gradient Fill under slope curve */}
             <linearGradient id="ridgeSlopeFill" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#C57D65" stopOpacity="0.28" />
               <stop offset="50%" stopColor="#8D4A33" stopOpacity="0.12" />
               <stop offset="100%" stopColor="#3D4838" stopOpacity="0.25" />
             </linearGradient>
 
-            {/* Glowing path stroke gradient */}
             <linearGradient id="ridgePathStroke" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#E2DDD3" />
               <stop offset="50%" stopColor="#C57D65" />
@@ -99,7 +94,6 @@ export default function ArrivalElevationMap({
             </linearGradient>
           </defs>
 
-          {/* Contour Elevation Datum Lines */}
           {[
             { y: 55, label: "265m Upper Crest" },
             { y: 135, label: "240m Mid Terrace" },
@@ -126,13 +120,11 @@ export default function ArrivalElevationMap({
             </g>
           ))}
 
-          {/* Sayan Gorge Filled Profile */}
           <path
             d="M 20 50 Q 140 65 240 135 T 460 215 L 460 245 L 20 245 Z"
             fill="url(#ridgeSlopeFill)"
           />
 
-          {/* Sayan Gorge Slope Contour Trajectory */}
           <path
             d="M 20 50 Q 140 65 240 135 T 460 215"
             fill="none"
@@ -141,7 +133,6 @@ export default function ArrivalElevationMap({
             strokeLinecap="round"
           />
 
-          {/* Secondary Subak Stepping Contours */}
           <path
             d="M 20 85 Q 150 98 250 162 T 460 235"
             fill="none"
@@ -151,7 +142,6 @@ export default function ArrivalElevationMap({
             strokeDasharray="4 4"
           />
 
-          {/* Ayung River Rapids Indicator at Gorge Base */}
           <path
             d="M 370 218 Q 410 212 460 216"
             fill="none"
@@ -169,7 +159,6 @@ export default function ArrivalElevationMap({
             Ayung River
           </text>
 
-          {/* Interactive Arrival Waypoints along the Sayan Contour */}
           {WAYPOINTS.map((wp, idx) => {
             const isSelected = idx === activeStepIndex;
             return (
@@ -178,7 +167,6 @@ export default function ArrivalElevationMap({
                 onClick={() => onSelectStep(idx)}
                 className="cursor-pointer group"
               >
-                {/* Vertical Datum Drop Line */}
                 <line
                   x1={wp.svgX}
                   y1={wp.svgY}
@@ -189,7 +177,6 @@ export default function ArrivalElevationMap({
                   strokeDasharray="2 2"
                 />
 
-                {/* Pulse Ring on Selected Waypoint */}
                 {isSelected && (
                   <motion.circle
                     cx={wp.svgX}
@@ -208,7 +195,6 @@ export default function ArrivalElevationMap({
                   />
                 )}
 
-                {/* Waypoint Marker Disc */}
                 <circle
                   cx={wp.svgX}
                   cy={wp.svgY}
@@ -219,7 +205,6 @@ export default function ArrivalElevationMap({
                   className="transition-all duration-300 group-hover:scale-125"
                 />
 
-                {/* Step Index Label Bubble */}
                 <g transform={`translate(${wp.svgX}, ${wp.svgY - 14})`}>
                   <rect
                     x="-14"
@@ -247,11 +232,9 @@ export default function ArrivalElevationMap({
           })}
         </svg>
 
-        {/* Ambient Valley Mist Accent Stream */}
         <div className="absolute bottom-2 left-6 right-6 h-[1px] bg-gradient-to-r from-transparent via-[#C57D65]/40 to-transparent" />
       </div>
 
-      {/* Interactive Active Waypoint HUD Specification Card */}
       <div className="p-3.5 bg-[#1B1916] border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
@@ -270,7 +253,6 @@ export default function ArrivalElevationMap({
           </p>
         </div>
 
-        {/* Rapid Step Buttons */}
         <div className="flex items-center gap-1.5 w-full sm:w-auto">
           {WAYPOINTS.map((wp, idx) => (
             <button

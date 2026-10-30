@@ -126,7 +126,6 @@ export default function SensorialExperiences() {
       className="py-16 sm:py-28 lg:py-36 bg-[#EFECE4] border-t border-b border-[#E2DDD3]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Section Header */}
         <div className="relative pb-6 mb-14 sm:mb-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 ritual-header-item">
@@ -146,9 +145,7 @@ export default function SensorialExperiences() {
           <div className="ritual-header-rule absolute bottom-0 left-0 right-0 h-[1px] bg-[#E2DDD3]" />
         </div>
 
-        {/* Circadian Narrative Flow with Scroll-Driven Central Spine */}
         <div ref={timelineWrapRef} className="relative space-y-16 lg:space-y-24">
-          {/* Desktop Circadian Spine */}
           <div
             aria-hidden="true"
             className="hidden lg:block absolute left-1/2 top-4 bottom-4 w-[1px] -translate-x-1/2 bg-[#E2DDD3] pointer-events-none"
@@ -166,7 +163,6 @@ export default function SensorialExperiences() {
                 key={exp.id}
                 className="ritual-row relative grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center group"
               >
-                {/* Image Frame (Alternating Column Order on Desktop) */}
                 <div
                   className={`lg:col-span-6 ${
                     isEven ? "lg:order-1 lg:pr-4" : "lg:order-2 lg:pl-4"
@@ -194,7 +190,6 @@ export default function SensorialExperiences() {
                   </div>
                 </div>
 
-                {/* Narrative Details */}
                 <div
                   className={`ritual-narrative lg:col-span-6 space-y-6 ${
                     isEven ? "lg:order-2 lg:pl-4" : "lg:order-1 lg:pr-4"

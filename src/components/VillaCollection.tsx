@@ -87,7 +87,6 @@ export default function VillaCollection({
       className="py-16 sm:py-28 lg:py-36 bg-[#F7F4EE]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Section Header */}
         <div className="relative pb-6 mb-12 sm:mb-16">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 villa-section-intro">
@@ -107,7 +106,6 @@ export default function VillaCollection({
           <div className="villa-header-rule absolute bottom-0 left-0 right-0 h-[1px] bg-[#E2DDD3]" />
         </div>
 
-        {/* Architectural Portfolio Selector with Motion Shared Layout Bar */}
         <div className="villa-section-intro grid grid-cols-1 md:grid-cols-3 border-b border-[#E2DDD3] mb-12 sm:mb-16 gap-0">
           {VILLA_RESIDENCES.map((villa, idx) => {
             const isActive = villa.id === activeVillaId;
@@ -147,9 +145,7 @@ export default function VillaCollection({
           })}
         </div>
 
-        {/* Active Villa Architectural Dossier */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-          {/* Left Column: Asymmetric Architectural Imagery with AnimatePresence */}
           <div className="lg:col-span-7 space-y-6">
             <div className="relative aspect-[16/11] overflow-hidden border border-[#E2DDD3] bg-[#181614]">
               <AnimatePresence mode="wait">
@@ -194,7 +190,6 @@ export default function VillaCollection({
               </div>
             </div>
 
-            {/* Gallery Thumbnails */}
             <div className="grid grid-cols-3 gap-3">
               {activeVilla.galleryImages.map((imgUrl, i) => (
                 <motion.button
@@ -222,7 +217,6 @@ export default function VillaCollection({
               ))}
             </div>
 
-            {/* Architectural Concept Note */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={`note-${activeVilla.id}`}
@@ -242,7 +236,6 @@ export default function VillaCollection({
             </AnimatePresence>
           </div>
 
-          {/* Right Column: Architectural Dossier Specifications */}
           <div className="lg:col-span-5 space-y-8">
             <AnimatePresence mode="wait">
               <motion.div
@@ -267,7 +260,6 @@ export default function VillaCollection({
               </motion.div>
             </AnimatePresence>
 
-            {/* Architectural Metrics Ledger with Live Animated Counters */}
             <div className="grid grid-cols-2 gap-4 py-2">
               <div className="space-y-1">
                 <span className="flex items-center gap-1.5 text-[9px] tracking-[0.2em] uppercase text-[#665F56]">
@@ -310,7 +302,6 @@ export default function VillaCollection({
               </div>
             </div>
 
-            {/* Narrative Description & Highlights */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={`desc-${activeVilla.id}`}
@@ -343,7 +334,6 @@ export default function VillaCollection({
               </motion.div>
             </AnimatePresence>
 
-            {/* Tariff & Reservation Gateway */}
             <div className="pt-6 border-t border-[#E2DDD3] space-y-4">
               <div className="flex items-baseline justify-between">
                 <div>

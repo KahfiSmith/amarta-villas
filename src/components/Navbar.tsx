@@ -112,7 +112,6 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
           <div className="flex items-center justify-between">
-            {/* Brand Monogram */}
             <Link
               href="/"
               onClick={handleBrandClick}
@@ -127,7 +126,6 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Desktop Editorial Navigation with Shared Layout Active Indicator */}
             <nav className="hidden md:flex items-center gap-6 lg:gap-8">
               {NAV_LINKS.map((link) => {
                 const isActive = activeSection === link.id;
@@ -157,7 +155,6 @@ export default function Navbar() {
               })}
             </nav>
 
-            {/* Right Meta & Action */}
             <div className="hidden lg:flex items-center gap-6">
               <span className="text-[10px] tracking-[0.24em] uppercase text-[#665F56]">
                 Sayan Ridge &bull; 240M
@@ -175,7 +172,6 @@ export default function Navbar() {
               </motion.a>
             </div>
 
-            {/* Mobile Menu Trigger with explicit label */}
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
@@ -196,14 +192,12 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Scroll Progress Line */}
         <div
           ref={progressBarRef}
           className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#8D4A33] origin-left scale-x-0 transition-transform duration-150 ease-out pointer-events-none"
         />
       </motion.header>
 
-      {/* Animated Mobile Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div

@@ -79,7 +79,6 @@ export default function EstateCoordinates() {
       className="py-16 sm:py-28 lg:py-36 bg-[#F7F4EE]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        {/* Section Header */}
         <div className="relative pb-6 mb-14 sm:mb-20">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-3 coords-reveal">
@@ -101,9 +100,7 @@ export default function EstateCoordinates() {
           />
         </div>
 
-        {/* Topography & Arrival Composition */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-          {/* Left Column: Geographic Blueprint */}
           <div className="lg:col-span-6 space-y-8 coords-reveal">
             <div className="space-y-3 border-b border-[#E2DDD3] pb-6">
               <span className="text-[9px] tracking-[0.28em] uppercase text-[#8D4A33] font-semibold block">
@@ -117,7 +114,6 @@ export default function EstateCoordinates() {
               </p>
             </div>
 
-            {/* Micro Blueprint Specs */}
             <div className="grid grid-cols-2 gap-6 py-2 border-b border-[#E2DDD3] pb-6">
               <div className="space-y-1">
                 <span className="flex items-center gap-1.5 text-[9px] tracking-[0.22em] uppercase text-[#665F56]">
@@ -140,7 +136,6 @@ export default function EstateCoordinates() {
               </div>
             </div>
 
-            {/* Transit Distances */}
             <div className="space-y-4">
               <span className="text-[9px] tracking-[0.26em] uppercase text-[#665F56] font-semibold block">
                 Accessibility &amp; Transit Estimates
@@ -184,7 +179,6 @@ export default function EstateCoordinates() {
             </div>
           </div>
 
-          {/* Right Column: Interactive Sayan Ridge Elevation & The Welcoming Sequence */}
           <div className="lg:col-span-6 space-y-8 lg:border-l lg:border-[#E2DDD3] lg:pl-12 coords-reveal">
             <ArrivalElevationMap
               activeStepIndex={activeStepIndex}
@@ -242,7 +236,6 @@ export default function EstateCoordinates() {
               })}
             </div>
 
-            {/* Shuttle Note */}
             <div className="pt-6 border-t border-[#E2DDD3] space-y-1.5">
               <span className="text-[9px] tracking-[0.24em] uppercase text-[#8D4A33] font-medium block">
                 Estate Mobility Provision
