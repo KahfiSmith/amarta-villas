@@ -12,23 +12,17 @@ import GuestJournal from "@/components/GuestJournal";
 import EstateCoordinates from "@/components/EstateCoordinates";
 import Footer from "@/components/Footer";
 import { VILLA_RESIDENCES } from "@/data/villa";
+import { useSmoothScroll } from "@/components/SmoothScrollProvider";
 
 export default function Home() {
   const [selectedVillaId, setSelectedVillaId] = useState(
     VILLA_RESIDENCES[0].id
   );
+  const { scrollTo } = useSmoothScroll();
 
   const handleVillaSelect = (villaId: string) => {
     setSelectedVillaId(villaId);
-    const conciergeSection = document.getElementById("concierge");
-    if (conciergeSection) {
-      const prefersReducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
-      conciergeSection.scrollIntoView({
-        behavior: prefersReducedMotion ? "auto" : "smooth",
-      });
-    }
+    scrollTo("#concierge", { offset: -20, duration: 1.4 });
   };
 
   return (

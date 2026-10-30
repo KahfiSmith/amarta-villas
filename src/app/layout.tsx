@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 import JsonLd from "@/components/JsonLd";
+import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 
 const jakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -64,10 +65,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`scroll-smooth ${jakartaSans.variable} ${newsreaderSerif.variable}`}>
+    <html lang="en" className={`${jakartaSans.variable} ${newsreaderSerif.variable}`}>
       <body className="font-sans bg-[#F7F4EE] text-[#151412] antialiased selection:bg-[#A2583E] selection:text-white">
         <JsonLd />
-        {children}
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
       </body>
     </html>
   );
