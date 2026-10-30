@@ -4,7 +4,8 @@ import { SanctuaryMaterials } from "./materials";
 export function computeGorgeElevation(x: number, z: number): number {
   const riverCurve = Math.sin(z * 0.65) * 0.45;
   const distFromRiver = Math.abs(x - riverCurve);
-  const gorgeWall = Math.pow(Math.min(distFromRiver / 2.8, 1.25), 1.5) * 1.25;
+  const gorgeWall =
+    Math.pow(Math.max(0, Math.min(distFromRiver / 2.8, 1.25)), 1.5) * 1.25;
   const ridgeUndulation =
     Math.sin(x * 1.4 + z * 0.9) * 0.14 +
     Math.cos(x * 2.2 - z * 1.3) * 0.08;
@@ -55,10 +56,11 @@ export function createPalmTree(
     const fPos = frondGeo.attributes.position;
     for (let p = 0; p < fPos.count; p++) {
       const py = fPos.getY(p);
-      const distFromBase = py + (0.65 * scale) / 2;
+      const distFromBase = Math.max(0, py + (0.65 * scale) / 2);
       fPos.setZ(p, -Math.pow(distFromBase, 1.8) * 0.55);
     }
     frondGeo.computeVertexNormals();
+    frondGeo.computeBoundingSphere();
 
     const frondMesh = new THREE.Mesh(frondGeo, materials.foliageMat);
     frondMesh.position.set(currX, crownY, currZ);
