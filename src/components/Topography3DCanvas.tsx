@@ -215,13 +215,13 @@ export default function Topography3DCanvas({
     window.addEventListener("resize", handleResize);
 
     let reqId = 0;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const renderLoop = () => {
       reqId = requestAnimationFrame(renderLoop);
       if (!isVisible) return;
 
-      const t = clock.getElapsedTime();
+      const t = (performance.now() - startTime) * 0.001;
       if (!prefersReducedMotion) {
         rootGroup.rotation.y = Math.sin(t * 0.3) * 0.08;
         markers.forEach((m, i) => {

@@ -300,13 +300,13 @@ export default function Sanctuary3DScene({
     window.addEventListener("resize", handleResize);
 
     let reqId = 0;
-    const clock = new THREE.Clock();
+    const startTime = performance.now();
 
     const animate = () => {
       reqId = requestAnimationFrame(animate);
       if (!isInViewport) return;
 
-      const elapsed = clock.getElapsedTime();
+      const elapsed = (performance.now() - startTime) * 0.001;
 
       if (!isPausedRef.current) {
         worldGroup.rotation.y = THREE.MathUtils.lerp(
