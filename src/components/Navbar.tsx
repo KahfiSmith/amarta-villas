@@ -11,6 +11,7 @@ import {
   mobileDrawerVariants,
   mobileLinkItem,
 } from "@/lib/motion-variants";
+import { useSmoothScroll } from "./SmoothScrollProvider";
 
 const NAV_LINKS = [
   { name: "Philosophy", href: "#philosophy", id: "philosophy", label: "01. Ethos" },
@@ -25,6 +26,26 @@ export default function Navbar() {
   const [activeSection, setActiveSection] = useState<string>("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const progressBarRef = useRef<HTMLDivElement | null>(null);
+  const { scrollTo } = useSmoothScroll();
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      setIsMobileMenuOpen(false);
+      scrollTo(href, { offset: -70, duration: 1.35 });
+    }
+  };
+
+  const handleBrandClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      e.preventDefault();
+      setIsMobileMenuOpen(false);
+      scrollTo(0, { duration: 1.35 });
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -94,6 +115,7 @@ export default function Navbar() {
             {/* Brand Monogram */}
             <Link
               href="/"
+              onClick={handleBrandClick}
               className="group flex flex-col min-h-[44px] justify-center focus-visible:ring-2 focus-visible:ring-[#8D4A33] focus:outline-hidden"
               aria-label="AMARTA Sanctuary Home"
             >
@@ -113,6 +135,7 @@ export default function Navbar() {
                   <a
                     key={link.name}
                     href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
                     className={`min-h-[44px] inline-flex items-center text-[11px] tracking-[0.22em] uppercase transition-colors relative px-1 group focus-visible:ring-2 focus-visible:ring-[#8D4A33] focus:outline-hidden ${
                       isActive
                         ? "text-[#151412] font-medium"
@@ -141,6 +164,7 @@ export default function Navbar() {
               </span>
               <motion.a
                 href="#concierge"
+                onClick={(e) => handleNavClick(e, "#concierge")}
                 whileHover={{ y: -1 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2 }}
@@ -209,7 +233,7 @@ export default function Navbar() {
                     key={link.name}
                     variants={mobileLinkItem}
                     href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={(e) => handleNavClick(e, link.href)}
                     className="group min-h-[48px] flex items-center justify-between py-2 border-b border-[#E2DDD3]/60 focus-visible:ring-2 focus-visible:ring-[#8D4A33] focus:outline-hidden"
                   >
                     <span className="font-serif text-2xl text-[#151412] group-hover:text-[#8D4A33] transition-colors">
@@ -235,7 +259,7 @@ export default function Navbar() {
               </div>
               <a
                 href="#concierge"
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => handleNavClick(e, "#concierge")}
                 className="w-full min-h-[48px] flex items-center justify-center gap-2 bg-[#151412] text-[#F7F4EE] py-3.5 text-[11px] tracking-[0.22em] uppercase focus-visible:ring-2 focus-visible:ring-[#8D4A33] focus:outline-hidden"
               >
                 <span>Reserve Sanctuary Residence</span>

@@ -9,7 +9,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 interface SmoothScrollContextType {
   getLenis: () => Lenis | null;
-  scrollTo: (target: string | HTMLElement, options?: { offset?: number; duration?: number }) => void;
+  scrollTo: (
+    target: string | HTMLElement | number,
+    options?: { offset?: number; duration?: number }
+  ) => void;
 }
 
 const SmoothScrollContext = createContext<SmoothScrollContextType>({
@@ -85,19 +88,23 @@ export default function SmoothScrollProvider({
 
   const scrollTo = useCallback(
     (
-      target: string | HTMLElement,
+      target: string | HTMLElement | number,
       options?: { offset?: number; duration?: number }
     ) => {
       const lenis = lenisRef.current;
       if (lenis) {
         lenis.scrollTo(target, {
-          offset: options?.offset ?? 0,
-          duration: options?.duration ?? 1.4,
+          offset: options?.offset ?? (typeof target === "string" ? -70 : 0),
+          duration: options?.duration ?? 1.35,
         });
       } else {
-        const el = typeof target === "string" ? document.querySelector(target) : target;
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
+        if (typeof target === "number") {
+          window.scrollTo({ top: target, behavior: "smooth" });
+        } else {
+          const el = typeof target === "string" ? document.querySelector(target) : target;
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
         }
       }
     },
