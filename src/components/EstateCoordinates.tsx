@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import dynamic from "next/dynamic";
 import { MapPin, ArrowUpRight, Compass, Navigation } from "lucide-react";
 import { motion } from "motion/react";
 import gsap from "gsap";
@@ -9,19 +8,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ESTATE_DETAILS, ARRIVAL_EXPERIENCE } from "@/data/villa";
 import { SANCTUARY_SPRING } from "@/lib/motion-variants";
+import ArrivalElevationMap from "./ArrivalElevationMap";
 
 gsap.registerPlugin(ScrollTrigger);
-
-const Topography3DCanvas = dynamic(() => import("./Topography3DCanvas"), {
-  ssr: false,
-  loading: () => (
-    <div className="h-68 w-full bg-[#1B1916] border border-[#E2DDD3] flex items-center justify-center p-6">
-      <span className="text-[10px] tracking-[0.26em] uppercase text-[#C57D65]">
-        Loading 3D Sayan Ridge Elevation Profile...
-      </span>
-    </div>
-  ),
-});
 
 export default function EstateCoordinates() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
@@ -195,9 +184,9 @@ export default function EstateCoordinates() {
             </div>
           </div>
 
-          {/* Right Column: Interactive 3D Topography & The Welcoming Sequence */}
+          {/* Right Column: Interactive Sayan Ridge Elevation & The Welcoming Sequence */}
           <div className="lg:col-span-6 space-y-8 lg:border-l lg:border-[#E2DDD3] lg:pl-12 coords-reveal">
-            <Topography3DCanvas
+            <ArrivalElevationMap
               activeStepIndex={activeStepIndex}
               onSelectStep={setActiveStepIndex}
             />
@@ -207,7 +196,7 @@ export default function EstateCoordinates() {
                 The Welcoming Sequence
               </span>
               <span className="text-[9px] tracking-[0.2em] uppercase text-[#8D4A33]">
-                Select Step to Inspect 3D Contour
+                Select Step to Inspect Elevation
               </span>
             </div>
 
